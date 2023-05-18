@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSV File Reader</title>
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+        }
+    </style>
+    <script>
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                const csvContent = event.target.result;
+                console.log(csvContent); // Display CSV content in the console
+
+                // You can perform further processing on the CSV data here
+                // For example, parse the CSV and work with the data
+
+                // Convert CSV content to a 2D array
+                const rows = csvContent.split('\n');
+                const tableData = rows.map(row => row.split(','));
+
+                // Create table element
+                const table = document.createElement('table');
+
+                // Create table headers
+                const headers = tableData.shift();
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    headerRow.appendChild(th);
+                });
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+
+                // Create table body
+                const tbody = document.createElement('tbody');
+                tableData.forEach(rowData => {
+                    const row = document.createElement('tr');
+                    rowData.forEach(cellData => {
+                        const td = document.createElement('td');
+                        td.textContent = cellData;
+                        row.appendChild(td);
+                    });
+                    tbody.appendChild(row);
+                });
+                table.appendChild(tbody);
+
+                // Append the table to the body
+                document.body.appendChild(table);
+
+                // Create a download link
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(new Blob([csvContent], { type: 'text/csv' }));
+                downloadLink.download = file.name;
+                downloadLink.textContent = 'Download';
+
+                // Append the download link to the body
+                document.body.appendChild(downloadLink);
+            };
+
+            reader.readAsText(file);
+        }
+    </script>
+</head>
+<body>
+    <h1>CSV File Reader</h1>
+
+    <input type="file" accept=".csv" onchange="handleFileSelect(event)">
+    
+</body>
+</html>
