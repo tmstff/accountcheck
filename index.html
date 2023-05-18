@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>CSV File Reader</title>
+    <title>Account Check</title>
     <style>
         table {
             border-collapse: collapse;
@@ -12,70 +12,122 @@
         }
     </style>
     <script>
-        function handleFileSelect(event) {
+
+        function headerSelected(event) {
             const file = event.target.files[0];
             const reader = new FileReader();
 
             reader.onload = function(event) {
                 const csvContent = event.target.result;
-                console.log(csvContent); // Display CSV content in the console
-
-                // You can perform further processing on the CSV data here
-                // For example, parse the CSV and work with the data
 
                 // Convert CSV content to a 2D array
                 const rows = csvContent.split('\n');
                 const tableData = rows.map(row => row.split(','));
 
-                // Create table element
-                const table = document.createElement('table');
+                document.tableHeaders = tableData.shift();
 
-                // Create table headers
-                const headers = tableData.shift();
-                const thead = document.createElement('thead');
-                const headerRow = document.createElement('tr');
-                headers.forEach(header => {
-                    const th = document.createElement('th');
-                    th.textContent = header;
-                    headerRow.appendChild(th);
-                });
-                thead.appendChild(headerRow);
-                table.appendChild(thead);
-
-                // Create table body
-                const tbody = document.createElement('tbody');
-                tableData.forEach(rowData => {
-                    const row = document.createElement('tr');
-                    rowData.forEach(cellData => {
-                        const td = document.createElement('td');
-                        td.textContent = cellData;
-                        row.appendChild(td);
-                    });
-                    tbody.appendChild(row);
-                });
-                table.appendChild(tbody);
-
-                // Append the table to the body
-                document.body.appendChild(table);
-
-                // Create a download link
-                const downloadLink = document.createElement('a');
-                downloadLink.href = URL.createObjectURL(new Blob([csvContent], { type: 'text/csv' }));
-                downloadLink.download = file.name;
-                downloadLink.textContent = 'Download';
-
-                // Append the download link to the body
-                document.body.appendChild(downloadLink);
+                render();
             };
 
             reader.readAsText(file);
         }
+
+        function headerAndBodySelected(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                document.csvContent = event.target.result;
+
+                // Convert CSV content to a 2D array
+                const rows = document.csvContent.split('\n');
+                const tableData = rows.map(row => row.split(','));
+
+                document.tableHeaders = tableData.shift();
+                document.tableData = tableData;
+
+                render();
+            };
+
+            reader.readAsText(file);
+        }
+
+        function bodySelected(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                document.csvContent = event.target.result;
+
+                // Convert CSV content to a 2D array
+                const rows = document.csvContent.split('\n');
+                const tableData = rows.map(row => row.split(','));
+
+                tableData.shift();
+                document.tableData = tableData;
+
+                render();
+            };
+
+            reader.readAsText(file);
+        }
+
+        function render() {
+            if (document.tableHeaders) {
+                renderTableHeader(document.tableHeaders)
+            }
+            if (document.tableData) {
+                renderTableBody(document.tableData)
+            }
+
+            if (document.csvContent) {
+                const downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = URL.createObjectURL(new Blob([document.csvContent], { type: 'text/csv' }));
+                downloadLink.download = 'result.csv';
+            }
+        }
+
+        function renderTableHeader(headers) {
+            const thead = document.getElementById('accountDataHead');
+            removeChildNodes(thead);
+            const headerRow = document.createElement('tr');
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+        }
+
+        function renderTableBody(tableData) {
+            const tbody = document.getElementById('accountDataBody');
+            removeChildNodes(tbody);
+            tableData.forEach(rowData => {
+                const row = document.createElement('tr');
+                rowData.forEach(cellData => {
+                    const td = document.createElement('td');
+                    td.textContent = cellData;
+                    row.appendChild(td);
+                });
+                tbody.appendChild(row);
+            });
+        }
+
+        function removeChildNodes(element) {
+            while (element.firstChild) {
+                element.removeChild(element.firstChild);
+            }
+        }
     </script>
 </head>
 <body>
-    <h1>CSV File Reader</h1>
+    <h1>Account Check</h1>
 
-    <input type="file" accept=".csv" onchange="handleFileSelect(event)">
-    
+    Header: <input type="file" accept=".csv" onchange="headerSelected(event)"> - Header & Body: <input type="file" accept=".csv" onchange="headerAndBodySelected(event)"> - Body: <input type="file" accept=".csv" onchange="bodySelected(event)"> - <a id="downloadLink">Download</a>
+        
+    <table>
+        <thead id="accountDataHead"></thead>
+        <tbody id="accountDataBody"></tbody>
+    </table>
 </body>
 </html>
